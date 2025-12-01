@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package userservice;
+
+//servizio user manager
+service UserManager{
+  rpc CheckUserExists (UserRequest) returns (UserResponse);
+}
+
+message UserRequest {
+  string email=1;
+}
+
+message UserResponse {
+  bool exists=1;
+}

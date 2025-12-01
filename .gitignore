@@ -1,0 +1,18 @@
+# Ambienti virtuali
+.venv/
+venv/
+ENV/
+
+# Bytecode Python
+__pycache__/
+*.pyc
+
+# File di configurazione IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Dati dei Database (non caricarli mai!)
+*.db
+user_db_data/
+data_db_data/

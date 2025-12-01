@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # --- USER MANAGER SERVICE ---
+  user-manager:
+    build: ./user_manager
+    ports:
+      - "5001:5001"   # REST API
+      - "50051:50051" # gRPC
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - user-db
+    networks:
+      - flight-network
+
+  # Database MySQL per User Manager
+  user-db:
+    image: mysql:8.0
+    ports:
+      - "3307:3306" # Mappiamo sulla 3307 per non occupare la 3306 del Mac
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: user_db
+    platform: linux/amd64 # Fondamentale per il tuo Mac M1/M2
+    networks:
+      - flight-network
+
+  # --- DATA COLLECTOR SERVICE ---
+  data-collector:
+    build: ./data_collector
+    ports:
+      - "5002:5002"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - USER_MANAGER_HOST=user-manager:50051
+
+      # --- NUOVE VARIABILI PER OAUTH2 ---
+      # Inserisci qui il tuo Username e Password di OpenSky
+      # (In OpenSky spesso ClientID = Username)
+      - OPEN_SKY_CLIENT_ID=giorgiamusumeci@hotmail.it-api-client
+      - OPEN_SKY_CLIENT_SECRET=HE7nfpIzDjvYIe7B69dT337O3J1h52iS
+    depends_on:
+      - data-db
+      - user-manager
+    networks:
+      - flight-network
+
+  # Database MySQL per Data Collector
+  data-db:
+    image: mysql:8.0
+    ports:
+      - "3308:3306" # Mappiamo sulla 3308
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: data_db
+    platform: linux/amd64
+    networks:
+      - flight-network
+
+networks:
+  flight-network:
+    driver: bridge
