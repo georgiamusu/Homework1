@@ -7,7 +7,7 @@ import mysql.connector
 import grpc
 
 from db import get_db_connection, init_db
-from opensky_client import get_arrivals_count  # <--- NUOVO IMPORT
+from opensky_client import get_arrivals_count
 import user_service_pb2
 import user_service_pb2_grpc
 
@@ -28,7 +28,7 @@ def check_user_exists_grpc(email):
 
 # SCHEDULER (Logica di Business)
 def job_scarica_voli():
-    print(f" [{datetime.now()}] Scheduler attivo: aggiornamento dati...")
+    print(f" [{datetime.now()}] Scheduler attivo: aggiornamento dati")
     conn = None
     try:
         conn = get_db_connection()
@@ -40,7 +40,7 @@ def job_scarica_voli():
         airports = [row['airport_code'] for row in rows]
 
         if not airports:
-            print("   Nessun interesse trovato nel DB.")
+            print("Nessun interesse trovato nel DB.")
             return
 
         # 2. Per ogni aeroporto
@@ -49,7 +49,7 @@ def job_scarica_voli():
 
             if error:
                 print(f" Saltato {code}: {error}")
-                continue # Passa al prossimo
+                continue
 
             print(f"  {code}: trovati {count} voli. Salvataggio...")
 
@@ -66,7 +66,6 @@ def job_scarica_voli():
         if conn and conn.is_connected(): conn.close()
 
 # --- API REST ---
-
 @app.route('/add_interest', methods=['POST'])
 def add_interest():
     data = request.json
@@ -121,10 +120,6 @@ def get_last_stats(code):
 
 @app.route('/stats/average/<code>/<int:days>', methods=['GET'])
 def get_average_stats(code, days):
-    """
-    Calcola la media dei voli (arrivi) negli ultimi X giorni.
-    Requisito: "Calcolo della Media degli ultimi X giorni"
-    """
     conn = None
     try:
         conn = get_db_connection()
@@ -133,7 +128,7 @@ def get_average_stats(code, days):
         # Calcoliamo la data limite (oggi - X giorni)
         cutoff_date = datetime.now() - timedelta(days=days)
 
-        # Query SQL Pura per fare la media
+        # Query per fare la media
         cursor.execute("""
             SELECT AVG(arrivals_count) as media
             FROM flight_data 
@@ -156,40 +151,17 @@ def get_average_stats(code, days):
     finally:
         if conn: conn.close()
 
-# --- AVVIO ---
-"""if __name__ == '__main__':
-    init_db()
-
-    # Configura Scheduler
-    scheduler = APScheduler()
-    scheduler.init_app(app)
-    scheduler.start()
-
-    # Esegue ogni 15 minuti (900 secondi)
-    scheduler.add_job(id='fetch_flights', func=job_scarica_voli, trigger='interval', seconds=900)
-
-    print("Data Collector attivo sulla porta 5002")
-    app.run(host='0.0.0.0', port=5002, debug=False) """
-
-# ...
 
 # --- AVVIO ---
 if __name__ == '__main__':
     init_db()
 
-    # Configura e avvia scheduler
     scheduler = APScheduler()
     scheduler.init_app(app)
     scheduler.start()
 
-    # MODIFICA QUI: Imposta l'intervallo a 12 ore (come da specifiche PDF)
     scheduler.add_job(id='fetch_flights', func=job_scarica_voli, trigger='interval', hours=12)
-
-    # IMPORTANTE: Lascia questa riga!
-    # Serve per scaricare i dati SUBITO appena accendi il container.
-    # Così il prof vede che funziona, poi il sistema si mette a dormire per 12 ore.
-    print("🚀 Forzo scaricamento dati all'avvio (Demo Mode)...", flush=True)
     job_scarica_voli()
 
-    print("✅ Data Collector attivo sulla porta 5002")
+    print("Data Collector attivo sulla porta 5002")
     app.run(host='0.0.0.0', port=5002, debug=False)

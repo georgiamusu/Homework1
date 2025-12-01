@@ -86,8 +86,7 @@ def register_user():
 
 #main
 if __name__ == '__main__':
-    # QUESTA RIGA DEVE ESSERE QUI ED ESEGUITA PER PRIMA
-    print("--- STARTING USER MANAGER ---", flush=True)
+    print("AVVIO USER MANAGER", flush=True)
     init_db()
 
     t = threading.Thread(target=serve_grpc)

@@ -34,10 +34,6 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - USER_MANAGER_HOST=user-manager:50051
-
-      # --- NUOVE VARIABILI PER OAUTH2 ---
-      # Inserisci qui il tuo Username e Password di OpenSky
-      # (In OpenSky spesso ClientID = Username)
       - OPEN_SKY_CLIENT_ID=giorgiamusumeci@hotmail.it-api-client
       - OPEN_SKY_CLIENT_SECRET=HE7nfpIzDjvYIe7B69dT337O3J1h52iS
     depends_on:
@@ -50,7 +46,7 @@ services:
   data-db:
     image: mysql:8.0
     ports:
-      - "3308:3306" # Mappiamo sulla 3308
+      - "3308:3306"
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: data_db

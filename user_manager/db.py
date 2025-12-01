@@ -15,7 +15,7 @@ def init_db():
     print("AVVIO INIZIALIZZAZIONE DATABASE...", flush=True)
     conn = None
 
-    # Riprova per 60 volte (ogni 2 secondi) -> 2 minuti totali di pazienza
+    # Riprova per 60 volte (ogni 2 secondi)
     for i in range(60):
         try:
             print(f" Tentativo {i+1}/60 di connessione al DB...", flush=True)
@@ -32,7 +32,7 @@ def init_db():
             """)
             print(" Tabella 'users' verificata.", flush=True)
 
-            # Creazione Tabella Log (Cruciale per l'errore di prima)
+            # Creazione Tabella Log
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS request_log (
                     request_id VARCHAR(100) PRIMARY KEY,
